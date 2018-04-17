@@ -3,11 +3,14 @@ import os, errno
 import random
 import re
 import requests
+import shutil
+import time
 
 from bs4 import BeautifulSoup
 from PIL import Image, ImageFont
 from data_generator import FakeTextDataGenerator
 from multiprocessing import Pool
+
 
 def parse_arguments():
     """
@@ -176,6 +179,7 @@ def parse_arguments():
 
     return parser.parse_args()
 
+
 def load_dict(lang):
     """
         Read the dictionnary file and returns all words in it.
@@ -186,12 +190,14 @@ def load_dict(lang):
         lang_dict = d.readlines()
     return lang_dict
 
+
 def load_fonts():
     """
         Load all fonts in the fonts directory
     """
 
     return [os.path.join('fonts', font) for font in os.listdir('fonts')]
+
 
 def create_strings_from_file(filename, count):
     """
@@ -212,6 +218,7 @@ def create_strings_from_file(filename, count):
 
     return strings
 
+
 def create_strings_from_dict(length, allow_variable, count, lang_dict):
     """
         Create all strings by picking X random word in the dictionnary
@@ -226,6 +233,7 @@ def create_strings_from_dict(length, allow_variable, count, lang_dict):
             current_string += ' '
         strings.append(current_string[:-1])
     return strings
+
 
 def create_strings_from_wikipedia(minimum_length, count, lang):
     """
@@ -245,9 +253,9 @@ def create_strings_from_wikipedia(minimum_length, count, lang):
         # Only take a certain length
         lines = list(filter(
             lambda s:
-                len(s.split(' ')) > minimum_length
-                and not "Wikipedia" in s
-                and not "wikipedia" in s,
+            len(s.split(' ')) > minimum_length
+            and not "Wikipedia" in s
+            and not "wikipedia" in s,
             [
                 ' '.join(re.findall(r"[\w']+", s.strip()))[0:200] for s in soup.get_text().splitlines()
             ]
@@ -258,6 +266,7 @@ def create_strings_from_wikipedia(minimum_length, count, lang):
 
     return sentences[0:count]
 
+
 def main():
     """
         Description: Main function
@@ -267,11 +276,10 @@ def main():
     args = parse_arguments()
 
     # Create the directory if it does not exist.
-    try:
-        os.makedirs(args.output_dir)
-    except OSError as e:
-        if e.errno != errno.EEXIST:
-            raise
+    if os.path.isdir(args.output_dir):
+        shutil.rmtree(args.output_dir)
+        time.sleep(0.2)
+    os.makedirs(args.output_dir)
 
     # Creating word list
     lang_dict = load_dict(args.language)
@@ -288,7 +296,6 @@ def main():
         strings = create_strings_from_file(args.input_file, args.count)
     else:
         strings = create_strings_from_dict(args.length, args.random, args.count, lang_dict)
-
 
     string_count = len(strings)
 
@@ -314,6 +321,13 @@ def main():
         )
     )
     p.terminate()
+    if args.name_format == 2:
+        # Create file with filename-to-label connections
+        with open(os.path.join("out", "labels.txt"), 'w') as f:
+            for i in range(len(strings)):
+                file_name = str(i) + "." + args.extension
+                f.write("{} {}\n".format(os.path.join(os.getcwd(), file_name), strings[i]))
+
 
 if __name__ == '__main__':
     main()
