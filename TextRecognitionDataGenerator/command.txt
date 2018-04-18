@@ -1,0 +1,16 @@
+python run.py -w 1 -l numbs -c 100 -k 8 -rk -bl 2 -rbl -na 2 -tt True
+
+-w 1
+Set wordlength
+-l
+Set dict with words
+-c
+Words to create
+-k 8 -rk
+Rotate up to 8 degree
+-bl 2 -rbl
+Blur Gaussian with up to radius 2
+-na 2
+Don't put label in filename, but create .txt file with files-to-label data (Use if illegal chars in label)
+-tt True
+Split Data in Test/Trainings folder as required by CRNN-tensorflow
