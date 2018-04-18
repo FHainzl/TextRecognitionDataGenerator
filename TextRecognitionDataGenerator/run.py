@@ -323,10 +323,10 @@ def main():
     p.terminate()
     if args.name_format == 2:
         # Create file with filename-to-label connections
-        with open(os.path.join("out", "labels.txt"), 'w') as f:
+        with open(os.path.join("out", "sample.txt"), 'w') as f:
             for i in range(len(strings)):
                 file_name = str(i) + "." + args.extension
-                f.write("{} {}\n".format(os.path.join(os.getcwd(), file_name), strings[i]))
+                f.write("{} {}\n".format(os.path.join("out","Train", file_name), strings[i]))
 
 
 if __name__ == '__main__':
