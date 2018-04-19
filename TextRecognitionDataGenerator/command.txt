@@ -1,4 +1,5 @@
-python run.py -w 1 -l numbs -c 100 -k 8 -rk -bl 2 -rbl -na 2 -tt True
+python run.py -w 1 -l letnumsym -c 10000 -k 8 -rk -bl 2 -rbl -na 2 -tt True --output_dir ..\..\CRNN_Tensorflow\out
+
 
 -w 1
 Set wordlength

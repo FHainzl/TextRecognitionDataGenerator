@@ -2,20 +2,20 @@ from random import randint
 import shutil
 import os
 
-dict_name = "numbs.txt"
+dict_name = "letnumsym.txt"
 output_file = os.path.join("dicts", dict_name)
 # base_file = "de.txt"
 base_file = None
 if not base_file:
-    N_words = 100
+    N_words = 100000
 N_char_min = 2
-N_char_max = 5
+N_char_max = 8
 
 letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 numbers = "0123456789"
 symbols = ".,-+:*%/"
 
-chars = numbers + symbols
+chars = letters + numbers + symbols
 
 def rand_word(characters, word_length):
     """

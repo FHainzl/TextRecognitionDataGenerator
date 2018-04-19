@@ -19,7 +19,7 @@ def parse_arguments():
 
     parser = argparse.ArgumentParser(description='Generate synthetic text data for text recognition.')
     parser.add_argument(
-        "output_dir",
+        "--output_dir",
         type=str,
         nargs="?",
         help="The output directory",
@@ -336,10 +336,11 @@ def main():
 
         if args.name_format == 2:
             # Create file with filename-to-label connections
-            with open(os.path.join("out", "sample.txt"), 'w') as f:
+            with open(os.path.join(args.output_dir, "sample.txt"), 'w') as f:
                 for i in range(string_count):
                     file_name = str(i) + "." + args.extension
-                    f.write("{} {}\n".format(os.path.join("out", file_name), strings[i]))
+                    #f.write("{} {}\n".format(os.path.join("out", file_name), strings[i]))
+                    f.write("{} {}\n".format(os.path.join(file_name), strings[i]))
 
     else:  # Split in Test and Train directories
         training_perc = 0.8  # Percentage of data for training
@@ -370,10 +371,11 @@ def main():
 
         if args.name_format == 2:
             # Create file with filename-to-label connections
-            with open(os.path.join("out", "Train", "sample.txt"), 'w') as f:
+            with open(os.path.join(args.output_dir, "Train", "sample.txt"), 'w') as f:
                 for i in range(0,N_training_samples):
                     file_name = str(i) + "." + args.extension
-                    f.write("{} {}\n".format(os.path.join("out", "Train", file_name), strings[i]))
+                    #f.write("{} {}\n".format(os.path.join("out", "Train", file_name), strings[i]))
+                    f.write("{} {}\n".format(os.path.join(file_name), strings[i]))
 
         # Create test samples
         p = Pool(args.thread_count)
@@ -401,10 +403,11 @@ def main():
 
         if args.name_format == 2:
             # Create file with filename-to-label connections
-            with open(os.path.join("out", "Test", "sample.txt"), 'w') as f:
+            with open(os.path.join(args.output_dir, "Test", "sample.txt"), 'w') as f:
                 for i in range(N_training_samples,string_count):
                     file_name = str(i) + "." + args.extension
-                    f.write("{} {}\n".format(os.path.join("out", "Test", file_name), strings[i]))
+                    #f.write("{} {}\n".format(os.path.join("out", "Test", file_name), strings[i]))
+                    f.write("{} {}\n".format(os.path.join(file_name), strings[i]))
 
 
 if __name__ == '__main__':
