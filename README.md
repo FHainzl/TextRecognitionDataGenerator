@@ -2,6 +2,34 @@
 
 A synthetic data generator for text recognition
 
+## Including Symbols
+Run `dict_creation.py` to create a dict with random words made up of letters, digits and symbols.
+Then add the flags `-l letnumsym` and `-na 2` to `run.py`
+
+## Shortcut for useful command for CRNN
+python run.py -w 1 -l letnumsym -c 10000 -k 8 -rk -bl 2 -rbl -na 2 -tt True --output_dir out
+
+-w
+Set wordlength
+
+-l
+Set dict with words (You can create dict by running dict_creation.py)
+
+-c
+Words to create
+
+-k i -rk
+Rotate up to i degree
+
+-bl i -rbl
+Blur Gaussian with up to radius i
+
+-na 2
+Don't put label in filename, but create .txt file with files-to-label data (Use if illegal chars in label)
+
+-tt True
+Split Data in Test/Trainings folder as required by CRNN-tensorflow
+
 ## What is it for?
 Generating text image samples to train an OCR software
 

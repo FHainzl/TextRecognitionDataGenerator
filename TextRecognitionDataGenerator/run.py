@@ -157,7 +157,7 @@ def parse_arguments():
         "-na",
         "--name_format",
         type=int,
-        help="Define how the produced files will be named. 0: [TEXT]_[ID].[EXT], 1: [ID]_[TEXT].[EXT]",
+        help="Define how the produced files will be named. 0: [TEXT]_[ID].[EXT], 1: [ID]_[TEXT].[EXT] 2: [ID].[EXT] + one file samples.txt containing id-to-label mappings",
         default=0,
     )
     parser.add_argument(
@@ -339,7 +339,7 @@ def main():
             with open(os.path.join(args.output_dir, "sample.txt"), 'w') as f:
                 for i in range(string_count):
                     file_name = str(i) + "." + args.extension
-                    #f.write("{} {}\n".format(os.path.join("out", file_name), strings[i]))
+                    # f.write("{} {}\n".format(os.path.join("out", file_name), strings[i]))
                     f.write("{} {}\n".format(os.path.join(file_name), strings[i]))
 
     else:  # Split in Test and Train directories
@@ -372,9 +372,9 @@ def main():
         if args.name_format == 2:
             # Create file with filename-to-label connections
             with open(os.path.join(args.output_dir, "Train", "sample.txt"), 'w') as f:
-                for i in range(0,N_training_samples):
+                for i in range(0, N_training_samples):
                     file_name = str(i) + "." + args.extension
-                    #f.write("{} {}\n".format(os.path.join("out", "Train", file_name), strings[i]))
+                    # f.write("{} {}\n".format(os.path.join("out", "Train", file_name), strings[i]))
                     f.write("{} {}\n".format(os.path.join(file_name), strings[i]))
 
         # Create test samples
@@ -404,9 +404,9 @@ def main():
         if args.name_format == 2:
             # Create file with filename-to-label connections
             with open(os.path.join(args.output_dir, "Test", "sample.txt"), 'w') as f:
-                for i in range(N_training_samples,string_count):
+                for i in range(N_training_samples, string_count):
                     file_name = str(i) + "." + args.extension
-                    #f.write("{} {}\n".format(os.path.join("out", "Test", file_name), strings[i]))
+                    # f.write("{} {}\n".format(os.path.join("out", "Test", file_name), strings[i]))
                     f.write("{} {}\n".format(os.path.join(file_name), strings[i]))
 
 
