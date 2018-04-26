@@ -2,7 +2,7 @@
 
 A synthetic data generator for text recognition
 
-## Including Symbols
+## Include Symbols
 Run `dict_creation.py` to create a dict with random words made up of letters, digits and symbols.
 Then add the flags `-l letnumsym` and `-na 2` to `run.py`
 
