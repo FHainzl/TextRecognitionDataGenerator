@@ -6,28 +6,28 @@ A synthetic data generator for text recognition
 Run `dict_creation.py` to create a dict with random words made up of letters, digits and symbols.
 Then add the flags `-l letnumsym` and `-na 2` to `run.py`
 
-## Shortcut for useful command for CRNN
-python run.py -w 1 -l letnumsym -c 10000 -k 8 -rk -bl 2 -rbl -na 2 -tt True --output_dir out
+## Shortcut for useful command
+`python run.py -w 1 -l letnumsym -c 10000 -k 8 -rk -bl 2 -rbl -na 2 -tt True --output_dir out`
 
--w
+-w<br/>
 Set wordlength
 
--l
+-l<br/>
 Set dict with words (You can create dict by running dict_creation.py)
 
--c
+-c<br/>
 Words to create
 
--k i -rk
+-k i -rk<br/>
 Rotate up to i degree
 
--bl i -rbl
-Blur Gaussian with up to radius i
+-bl i -rbl<br/>
+Gaussian Blur with up to radius i
 
--na 2
+-na 2<br/>
 Don't put label in filename, but create .txt file with files-to-label data (Use if illegal chars in label)
 
--tt True
+-tt True<br/>
 Split Data in Test/Trainings folder as required by CRNN-tensorflow
 
 ## What is it for?
