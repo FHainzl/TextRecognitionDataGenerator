@@ -3,14 +3,11 @@ import os, errno
 import random
 import re
 import requests
-import shutil
-import time
 
 from bs4 import BeautifulSoup
 from PIL import Image, ImageFont
 from data_generator import FakeTextDataGenerator
 from multiprocessing import Pool
-
 
 def parse_arguments():
     """
@@ -157,7 +154,7 @@ def parse_arguments():
         "-na",
         "--name_format",
         type=int,
-        help="Define how the produced files will be named. 0: [TEXT]_[ID].[EXT], 1: [ID]_[TEXT].[EXT] 2: [ID].[EXT] + one file samples.txt containing id-to-label mappings",
+        help="Define how the produced files will be named. 0: [TEXT]_[ID].[EXT], 1: [ID]_[TEXT].[EXT] 2: [ID].[EXT] + one file labels.txt containing id-to-label mappings",
         default=0,
     )
     parser.add_argument(
@@ -176,14 +173,6 @@ def parse_arguments():
         help="Define the distorsion's orientation. Only used if -d is specified. 0: Vertical (Up and down), 1: Horizontal (Left and Right), 2: Both",
         default=0
     )
-    parser.add_argument(
-        "-tt",
-        "--testtrain",
-        type=bool,
-        nargs="?",
-        help="Specify whether to output in training/test set as required by CRNN-tensorflow",
-        default=False
-    )
 
     return parser.parse_args()
 
@@ -198,14 +187,12 @@ def load_dict(lang):
         lang_dict = d.readlines()
     return lang_dict
 
-
 def load_fonts():
     """
         Load all fonts in the fonts directory
     """
 
     return [os.path.join('fonts', font) for font in os.listdir('fonts')]
-
 
 def create_strings_from_file(filename, count):
     """
@@ -226,7 +213,6 @@ def create_strings_from_file(filename, count):
 
     return strings
 
-
 def create_strings_from_dict(length, allow_variable, count, lang_dict):
     """
         Create all strings by picking X random word in the dictionnary
@@ -241,7 +227,6 @@ def create_strings_from_dict(length, allow_variable, count, lang_dict):
             current_string += ' '
         strings.append(current_string[:-1])
     return strings
-
 
 def create_strings_from_wikipedia(minimum_length, count, lang):
     """
@@ -261,9 +246,9 @@ def create_strings_from_wikipedia(minimum_length, count, lang):
         # Only take a certain length
         lines = list(filter(
             lambda s:
-            len(s.split(' ')) > minimum_length
-            and not "Wikipedia" in s
-            and not "wikipedia" in s,
+                len(s.split(' ')) > minimum_length
+                and not "Wikipedia" in s
+                and not "wikipedia" in s,
             [
                 ' '.join(re.findall(r"[\w']+", s.strip()))[0:200] for s in soup.get_text().splitlines()
             ]
@@ -274,7 +259,6 @@ def create_strings_from_wikipedia(minimum_length, count, lang):
 
     return sentences[0:count]
 
-
 def main():
     """
         Description: Main function
@@ -283,14 +267,12 @@ def main():
     # Argument parsing
     args = parse_arguments()
 
-    # Remove dir if exists, then create it.
-    if os.path.isdir(args.output_dir):
-        shutil.rmtree(args.output_dir)
-        time.sleep(0.2)
-    os.makedirs(args.output_dir)
-    if args.testtrain:
-        os.makedirs(os.path.join(args.output_dir, "Train"))
-        os.makedirs(os.path.join(args.output_dir, "Test"))
+    # Create the directory if it does not exist.
+    try:
+        os.makedirs(args.output_dir)
+    except OSError as e:
+        if e.errno != errno.EEXIST:
+            raise
 
     # Creating word list
     lang_dict = load_dict(args.language)
@@ -308,107 +290,38 @@ def main():
     else:
         strings = create_strings_from_dict(args.length, args.random, args.count, lang_dict)
 
+
     string_count = len(strings)
 
-    if not args.testtrain:
-        p = Pool(args.thread_count)
-        p.starmap(
-            FakeTextDataGenerator.generate,
-            zip(
-                [i for i in range(0, string_count)],
-                strings,
-                [fonts[random.randrange(0, len(fonts))] for _ in range(0, string_count)],
-                [args.output_dir] * string_count,
-                [args.format] * string_count,
-                [args.extension] * string_count,
-                [args.skew_angle] * string_count,
-                [args.random_skew] * string_count,
-                [args.blur] * string_count,
-                [args.random_blur] * string_count,
-                [args.background] * string_count,
-                [args.distorsion] * string_count,
-                [args.distorsion_orientation] * string_count,
-                [args.handwritten] * string_count,
-                [args.name_format] * string_count,
-            )
+    p = Pool(args.thread_count)
+    p.starmap(
+        FakeTextDataGenerator.generate,
+        zip(
+            [i for i in range(0, string_count)],
+            strings,
+            [fonts[random.randrange(0, len(fonts))] for _ in range(0, string_count)],
+            [args.output_dir] * string_count,
+            [args.format] * string_count,
+            [args.extension] * string_count,
+            [args.skew_angle] * string_count,
+            [args.random_skew] * string_count,
+            [args.blur] * string_count,
+            [args.random_blur] * string_count,
+            [args.background] * string_count,
+            [args.distorsion] * string_count,
+            [args.distorsion_orientation] * string_count,
+            [args.handwritten] * string_count,
+            [args.name_format] * string_count,
         )
-        p.terminate()
+    )
+    p.terminate()
 
-        if args.name_format == 2:
-            # Create file with filename-to-label connections
-            with open(os.path.join(args.output_dir, "sample.txt"), 'w') as f:
-                for i in range(string_count):
-                    file_name = str(i) + "." + args.extension
-                    # f.write("{} {}\n".format(os.path.join("out", file_name), strings[i]))
-                    f.write("{} {}\n".format(os.path.join(file_name), strings[i]))
-
-    else:  # Split in Test and Train directories
-        training_perc = 0.8  # Percentage of data for training
-        N_training_samples = int(training_perc * string_count)
-        # Create training samples sample
-        p = Pool(args.thread_count)
-        p.starmap(
-            FakeTextDataGenerator.generate,
-            zip(
-                [i for i in range(0, N_training_samples)],
-                strings,
-                [fonts[random.randrange(0, len(fonts))] for _ in range(0, string_count)],
-                [os.path.join(args.output_dir, "Train")] * string_count,
-                [args.format] * string_count,
-                [args.extension] * string_count,
-                [args.skew_angle] * string_count,
-                [args.random_skew] * string_count,
-                [args.blur] * string_count,
-                [args.random_blur] * string_count,
-                [args.background] * string_count,
-                [args.distorsion] * string_count,
-                [args.distorsion_orientation] * string_count,
-                [args.handwritten] * string_count,
-                [args.name_format] * string_count,
-            )
-        )
-        p.terminate()
-
-        if args.name_format == 2:
-            # Create file with filename-to-label connections
-            with open(os.path.join(args.output_dir, "Train", "sample.txt"), 'w') as f:
-                for i in range(0, N_training_samples):
-                    file_name = str(i) + "." + args.extension
-                    # f.write("{} {}\n".format(os.path.join("out", "Train", file_name), strings[i]))
-                    f.write("{} {}\n".format(os.path.join(file_name), strings[i]))
-
-        # Create test samples
-        p = Pool(args.thread_count)
-        p.starmap(
-            FakeTextDataGenerator.generate,
-            zip(
-                [i for i in range(N_training_samples, string_count)],
-                strings,
-                [fonts[random.randrange(0, len(fonts))] for _ in range(0, string_count)],
-                [os.path.join(args.output_dir, "Test")] * string_count,
-                [args.format] * string_count,
-                [args.extension] * string_count,
-                [args.skew_angle] * string_count,
-                [args.random_skew] * string_count,
-                [args.blur] * string_count,
-                [args.random_blur] * string_count,
-                [args.background] * string_count,
-                [args.distorsion] * string_count,
-                [args.distorsion_orientation] * string_count,
-                [args.handwritten] * string_count,
-                [args.name_format] * string_count,
-            )
-        )
-        p.terminate()
-
-        if args.name_format == 2:
-            # Create file with filename-to-label connections
-            with open(os.path.join(args.output_dir, "Test", "sample.txt"), 'w') as f:
-                for i in range(N_training_samples, string_count):
-                    file_name = str(i) + "." + args.extension
-                    # f.write("{} {}\n".format(os.path.join("out", "Test", file_name), strings[i]))
-                    f.write("{} {}\n".format(os.path.join(file_name), strings[i]))
-
+    if args.name_format == 2:
+        # Create file with filename-to-label connections
+        with open(os.path.join(args.output_dir, "labels.txt"), 'w') as f:
+            for i in range(string_count):
+                file_name = str(i) + "." + args.extension
+                f.write("{} {}\n".format(file_name, strings[i]))
 
 if __name__ == '__main__':
     main()
